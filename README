@@ -1,0 +1,8 @@
+This project is test problem: image library.
+
+To install application try following commands:
+    ./configure
+    make
+
+To install from GIT repository run before
+    autoreconf -vis
