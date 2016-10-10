@@ -10,6 +10,8 @@
     DO_ACTION( FLOAT, RGB, FloatRgb, action, ## __VA_ARGS__); \
     DO_ACTION(   INT, RGB,   IntRgb, action, ## __VA_ARGS__);
 
+
+
 namespace ImgLib {
 
     // It is difficult for me to say is it possible to represent 
@@ -117,7 +119,5 @@ namespace ImgLib {
         }
 
         TRY_ALL_ACTIONS(convolve, convolutionVector);
-
-        throw Exception("Unsupported format");
     }
 }
