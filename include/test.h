@@ -3,6 +3,10 @@
 
 #include <stdlib.h>
 
+#include <stdexcept>
+#include <string>
+#include <vector>
+
 namespace ImgLib {
 
     struct FloatRgb
@@ -21,6 +25,17 @@ namespace ImgLib {
 
     typedef float FloatGrayscale;
     typedef int IntGrayscale;
+
+    class Exception: public std::runtime_error 
+    {
+        public:
+            explicit Exception(const std::string & what):
+                std::runtime_error(what)
+            {}
+    };
+
+    /* My style to make Image class very easy to use. Client should know nothing */
+    /* about internals and template magic inside                                 */
 
     class Image
     {
@@ -48,15 +63,19 @@ namespace ImgLib {
             void setPixel(size_t x, size_t y, const FloatGrayscale * value);            
             void setPixel(size_t x, size_t y, const IntGrayscale * value);            
 
-            void Convolve();
+            void Convolve_3x3(const float * data);
             void Scale(float factor);
 
         private:
             size_t width;
             size_t height;
 
-            void * imageStorage;
+            PixelFormat pixelFormat;
+            PixelType pixelType;
+
+            void * storage;
     };
+
 }
 
 #endif
