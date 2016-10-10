@@ -56,6 +56,39 @@ namespace ImgLib {
     };
         
 
+
+    template <Image::PixelFormat pixelFormat, Image::PixelType pixelType, class Pixel>
+        class ActionWrapper
+    {
+        public:
+            bool check(const Image * me) const
+            {
+                if (me->getPixelFormat() != pixelFormat) return false;
+                if (me->getPixelType() != pixelType) return false;
+                return true;
+            }
+
+            PixelVector<Pixel> * getStorage(const Image * me)
+            {
+                return static_cast<PixelVector<Pixel> *>(me->getStorage());
+            }
+
+            void convolve(Image * me, const std::vector<ConvolutionElement> & convolutionVector)
+            {
+                if (!check(me)) {
+                    /* Unsuported, nothing to do */
+                    return;
+                }
+
+                Image tmp;
+                me->cloneTo(&tmp);
+
+                auto source = getStorage(&tmp);
+                auto destination = getStorage(me);
+                ConvolutionAlgorithm(destination, source, convolutionVector);
+            }
+    };
+
     void Image::Convolve_3x3(const float * data)
     {
         /* Create convolution vector */
@@ -81,14 +114,9 @@ namespace ImgLib {
 
 
 
-        if (pixelFormat == FLOAT && pixelType == RGB) {
-            auto source = static_cast<PixelVector<FloatRgb> *>(tmp.storage);
-            auto destination = static_cast<PixelVector<FloatRgb> *>(storage);
-            ConvolutionAlgorithm(destination, source, convolutionVector);
-            return;
-        }
 
-
+        ActionWrapper<FLOAT, RGB, FloatRgb> actionWrapper;
+        actionWrapper.convolve(this, convolutionVector);
 
         throw Exception("Unsupported format");
     }

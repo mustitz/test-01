@@ -34,6 +34,8 @@ namespace ImgLib {
             {}
     };
 
+
+
     /* My style to make Image class very easy to use. Client should know nothing */
     /* about internals and template magic inside                                 */
 
@@ -52,6 +54,11 @@ namespace ImgLib {
             size_t getHeight() const { return height; }
 
             void cloneTo(Image * image) const;
+
+            PixelFormat getPixelFormat() const { return pixelFormat; }
+            PixelType getPixelType() const { return pixelType; }
+
+            void * getStorage() const { return storage; }
             
             void getPixel(size_t x, size_t y, FloatRgb * rgb) const;            
             void getPixel(size_t x, size_t y, IntRgb * rgb) const;            
