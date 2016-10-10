@@ -1,5 +1,15 @@
 #include "test.h"
 
+#define DO_ACTION(pixelFormat, pixelType, PixelClass, action, ...)        \
+    {                                                                     \
+        ActionWrapper<pixelFormat, pixelType, PixelClass> actionWrapper;  \
+        actionWrapper.action(this, ## __VA_ARGS__);                       \
+    }
+
+#define TRY_ALL_ACTIONS(action, ...)   \
+    DO_ACTION( FLOAT, RGB, FloatRgb, action, ## __VA_ARGS__); \
+    DO_ACTION(   INT, RGB, FloatRgb, action, ## __VA_ARGS__);
+
 namespace ImgLib {
 
     // It is difficult for me to say is it possible to represent 
@@ -104,19 +114,7 @@ namespace ImgLib {
             convolutionVector.push_back(element);
         }
 
-
-
-        /* Copy source */
-
-        Image tmp;
-        cloneTo(&tmp);
-
-
-
-
-
-        ActionWrapper<FLOAT, RGB, FloatRgb> actionWrapper;
-        actionWrapper.convolve(this, convolutionVector);
+        TRY_ALL_ACTIONS(convolve, convolutionVector);
 
         throw Exception("Unsupported format");
     }
