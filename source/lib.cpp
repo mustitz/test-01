@@ -1,28 +1,57 @@
 #include "test.h"
 
-#define DO_ACTION(pixelFormat, pixelType, PixelClass, action, ...)        \
+/* Out main goal to avoid copy+paste for algorhthm implementtion.
+ * So any algorithm like convolution or scaling is a template function.
+ * Template function is better due to optimization reason. Virtual 
+ * functions may give us an overhead.
+ */ 
+
+/* So here is macros to try a pixel format call. If it is matched then
+ * corresponding template function will be called. If not nothing will
+ * be happen.
+ */
+
+#define TRY_ACTION(pixelFormat, pixelType, PixelClass, action, ...)        \
     {                                                                     \
         ActionWrapper<pixelFormat, pixelType, PixelClass> actionWrapper;  \
         actionWrapper.action(this, ## __VA_ARGS__);                       \
     }
 
+/* And here we try to enumerate all possible pixel formats to select best one.
+ * As I noted in the header I assume that it is not very huge amount of
+ * possible pixel formats so it might be not very hard to enumerate them
+ * one time here.
+ */
+
 #define TRY_ALL_ACTIONS(action, ...)   \
-    DO_ACTION( FLOAT, RGB, FloatRgb, action, ## __VA_ARGS__); \
-    DO_ACTION(   INT, RGB,   IntRgb, action, ## __VA_ARGS__);
+    TRY_ACTION( FLOAT, RGB, FloatRgb, action, ## __VA_ARGS__); \
+    TRY_ACTION(   INT, RGB,   IntRgb, action, ## __VA_ARGS__);
 
 
 
 namespace ImgLib {
 
-    // It is difficult for me to say is it possible to represent 
-    // such kind of universal pixel format. Because except RGB
-    // it is possible to use other color formats like CMYK, HSV.
-    // But we assume that the given format is exists.
+    /* It is difficult for me to say is it possible to represent 
+     * such kind of universal pixel format. Because except RGB
+     * it is possible to use other color formats like CMYK, HSV.
+     * But we assume that the given format is exists.
+     * Class UniversalPixel would be used to converttion from
+     * one format to another throught universal pixel format.
+     */
      
     struct UniversalPixel
     {
         void load(const FloatRgb & pixel);
+        void save(FloatRgb * pixel);
     };
+
+
+
+
+    /* Each pixel representation is a structure. Here we define 
+     * operations for each such representation. For convolution
+     * only pixel addition and scaling is used. So here they are.
+     */
 
     void pixelAdd(FloatRgb * a, const FloatRgb & b);
     void pixelScale(FloatRgb * p, float factor);
@@ -31,6 +60,12 @@ namespace ImgLib {
     void pixelScale(IntRgb * p, float factor);
 
 
+
+    /* May be it is not very good during convolution to run two inner
+     * cycles in matrix. So I will replace 3x3 matrix with linear
+     * vector with 9 elements
+     */
+
     struct ConvolutionElement
     {
         int deltaX;
@@ -38,6 +73,12 @@ namespace ImgLib {
         float factor;
     };
 
+
+
+    /* Here is template for convolution algorithm which may be run for
+     * any possible pixel storage
+     */
+    
     template <class ImgData>
         void ConvolutionAlgorithm(ImgData * destination, ImgData * source, const std::vector<ConvolutionElement> & convolutionVector)
     {
@@ -57,6 +98,10 @@ namespace ImgLib {
         }
     }
 
+
+
+    /* Pixel vector is used to save data for specific pixel representation */
+
     template <class Pixel> 
         class PixelVector: private std::vector<Pixel>
     {
@@ -70,6 +115,8 @@ namespace ImgLib {
     };
         
 
+
+    /* This is action wrapper on template algorithms like convolution */
 
     template <Image::PixelFormat pixelFormat, Image::PixelType pixelType, class Pixel>
         class ActionWrapper
@@ -102,6 +149,10 @@ namespace ImgLib {
                 ConvolutionAlgorithm(destination, source, convolutionVector);
             }
     };
+
+
+
+    /* Example call for convolution with 3x3 matrix */
 
     void Image::Convolve_3x3(const float * data)
     {
