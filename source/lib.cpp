@@ -8,7 +8,7 @@
 
 #define TRY_ALL_ACTIONS(action, ...)   \
     DO_ACTION( FLOAT, RGB, FloatRgb, action, ## __VA_ARGS__); \
-    DO_ACTION(   INT, RGB, FloatRgb, action, ## __VA_ARGS__);
+    DO_ACTION(   INT, RGB,   IntRgb, action, ## __VA_ARGS__);
 
 namespace ImgLib {
 
@@ -25,6 +25,8 @@ namespace ImgLib {
     void pixelAdd(FloatRgb * a, const FloatRgb & b);
     void pixelScale(FloatRgb * p, float factor);
 
+    void pixelAdd(IntRgb * a, const IntRgb & b);
+    void pixelScale(IntRgb * p, float factor);
 
 
     struct ConvolutionElement
