@@ -11,11 +11,16 @@
  * be happen.
  */
 
-#define TRY_ACTION(pixelFormat, pixelType, PixelClass, action, ...)        \
+#define TRY_ACTION(pixelFormat, pixelType, PixelClass, action, ...)       \
     {                                                                     \
         ActionWrapper<pixelFormat, pixelType, PixelClass> actionWrapper;  \
-        actionWrapper.action(this, ## __VA_ARGS__);                       \
+        if (actionWrapper.check(this)) {                                  \
+            actionWrapper.action(this, ## __VA_ARGS__);                   \
+            break;                                                        \
+        }                                                                 \
     }
+
+
 
 /* And here we try to enumerate all possible pixel formats to select best one.
  * As I noted in the header I assume that it is not very huge amount of
@@ -24,12 +29,32 @@
  */
 
 #define TRY_ALL_ACTIONS(action, ...)   \
-    TRY_ACTION( FLOAT, RGB, FloatRgb, action, ## __VA_ARGS__); \
-    TRY_ACTION(   INT, RGB,   IntRgb, action, ## __VA_ARGS__);
+    do { \
+        TRY_ACTION( FLOAT, RGB, FloatRgb, action, ## __VA_ARGS__); \
+        TRY_ACTION(   INT, RGB,   IntRgb, action, ## __VA_ARGS__); \
+    } while (0)
 
 
 
 namespace ImgLib {
+
+
+
+    /* It is difficult for me to say is it possible to represent
+     * such kind of universal pixel format. Because except RGB
+     * it is possible to use other color formats like CMYK, HSV.
+     * But we assume that the given format is exists.
+     * Class UniversalPixel would be used to converttion from
+     * one format to another throught universal pixel format.
+     */
+
+    struct UniversalPixel
+    {
+        void load(const FloatRgb & pixel);
+        void save(FloatRgb * pixel);
+    };
+
+
 
     /* Each pixel representation is a structure. Here we define
      * operations for each such representation. For convolution
@@ -135,22 +160,12 @@ namespace ImgLib {
 
             void create(Image * me, size_t width, size_t height)
             {
-                if (!check(me)) {
-                    /* Unsuported, nothing to do */
-                    return;
-                }
-
                 me->storage = new PixelBuf<Pixel>();
                 me->storage->create(width, height);
             }
 
             void convolve(Image * me, const std::vector<ConvolutionElement> & convolutionVector)
             {
-                if (!check(me)) {
-                    /* Unsuported, nothing to do */
-                    return;
-                }
-
                 Image tmp;
                 me->cloneTo(&tmp);
 
@@ -182,24 +197,6 @@ namespace ImgLib {
     {
         TRY_ALL_ACTIONS(create, width, height);
     }
-
-
-    /* It is difficult for me to say is it possible to represent
-     * such kind of universal pixel format. Because except RGB
-     * it is possible to use other color formats like CMYK, HSV.
-     * But we assume that the given format is exists.
-     * Class UniversalPixel would be used to converttion from
-     * one format to another throught universal pixel format.
-     */
-
-    struct UniversalPixel
-    {
-        void load(const FloatRgb & pixel);
-        void save(FloatRgb * pixel);
-    };
-
-
-
 
 
 
