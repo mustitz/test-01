@@ -31,6 +31,30 @@
 
 namespace ImgLib {
 
+    class BasePixelBuf
+    {
+        public:
+            BasePixelBuf();
+            virtual ~BasePixelBuf();
+    };
+
+    Image::Image():
+        width(0),
+        height(0),
+        pixelFormat(FLOAT),
+        pixelType(RGB),
+        storage(nullptr)
+    {
+    }
+
+    Image::~Image()
+    {
+        if (storage != nullptr) {
+            delete storage;
+        }
+    }
+
+
     /* It is difficult for me to say is it possible to represent 
      * such kind of universal pixel format. Because except RGB
      * it is possible to use other color formats like CMYK, HSV.
@@ -103,10 +127,10 @@ namespace ImgLib {
     /* Pixel vector is used to save data for specific pixel representation */
 
     template <class Pixel> 
-        class PixelVector: private std::vector<Pixel>
+        class PixelBuf: public BasePixelBuf
     {
         private:
-            typedef std::vector<Pixel> Base;
+            std::vector<Pixel> data;
 
         public:
             Pixel getPixel(size_t x, size_t y);
@@ -129,9 +153,9 @@ namespace ImgLib {
                 return true;
             }
 
-            PixelVector<Pixel> * getStorage(const Image * me)
+            PixelBuf<Pixel> * getStorage(const Image * me)
             {
-                return static_cast<PixelVector<Pixel> *>(me->getStorage());
+                return static_cast<PixelBuf<Pixel> *>(me->getStorage());
             }
 
             void convolve(Image * me, const std::vector<ConvolutionElement> & convolutionVector)

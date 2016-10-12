@@ -39,6 +39,9 @@ namespace ImgLib {
 
 
 
+
+    class BasePixelBuf;
+
     /* My style to make Image class very easy to use. Client should know nothing
      * about internals and template magic inside. For user most simple way to set 
      * pixel format in class arguments and just to call functions without any
@@ -94,7 +97,7 @@ namespace ImgLib {
             PixelFormat pixelFormat;
             PixelType pixelType;
 
-            void * storage;
+            BasePixelBuf * storage;
     };
 
     /* So, our header is quite simple */
