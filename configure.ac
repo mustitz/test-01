@@ -1,5 +1,5 @@
 AC_INIT([andrii-sevastianov-test], [0.1], [mustitz@gmail.com])
-${CFLAGS=""}
+${CXXFLAGS=""}
 
 AM_INIT_AUTOMAKE(dist-bzip2)
 AC_CONFIG_MACRO_DIR([m4])

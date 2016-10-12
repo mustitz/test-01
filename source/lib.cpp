@@ -110,7 +110,7 @@ namespace ImgLib {
 
             Pixel getPixel(size_t x, size_t y) const
             {
-                if (x > width || y > height) {
+                if (x >= width || y >= height) {
                     Pixel def;
                     pixelSetDefault(&def);
                     return def;
@@ -173,7 +173,7 @@ namespace ImgLib {
      */
 
     template <class ImgData>
-        void ConvolutionAlgorithm(ImgData * destination, ImgData * source, const std::vector<ConvolutionElement> & convolutionVector)
+        void ConvolutionAlgorithm(ImgData * destination, const ImgData * source, const std::vector<ConvolutionElement> & convolutionVector)
     {
         for (size_t x = 0; x < source->getWidth(); ++x)
         for (size_t y = 0; y < source->getHeight(); ++y) {
@@ -188,6 +188,8 @@ namespace ImgLib {
                 pixelScale(&nextPixel, cit->factor);
                 pixelAdd(&pixel, nextPixel);
             }
+
+            destination->setPixel(x, y, pixel);
         }
     }
 
@@ -309,6 +311,7 @@ namespace ImgLib {
     {
         PixelBuf<INT, RGB, IntRgb>::safeGetPixel(this, buf, x, y, pixel);
     }
+
 
 
     /* Example call for convolution with 3x3 matrix */
