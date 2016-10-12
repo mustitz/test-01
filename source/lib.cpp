@@ -74,8 +74,8 @@ namespace ImgLib {
     class BasePixelBuf
     {
         public:
-            BasePixelBuf();
-            virtual ~BasePixelBuf();
+            BasePixelBuf() = default;
+            virtual ~BasePixelBuf() = default;
 
             virtual void create(size_t width, size_t height) = 0;
     };
