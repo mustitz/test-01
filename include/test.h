@@ -3,9 +3,18 @@
 
 #include <stdlib.h>
 
+#include <stdexcept>
 #include <vector>
 
 namespace ImgLib {
+
+    class Exception: public std::runtime_error
+    {
+        public:
+            Exception(const char * what):
+                std::runtime_error(what)
+            {}
+    };
 
     enum PixelFormat { EMPTY_PIXEL_FORMAT, FLOAT, INT };
     enum PixelType { EMPTY_PIXEL_TYPE, RGB, GRAY };
@@ -82,8 +91,8 @@ namespace ImgLib {
             ~Image();
 
             // Allocate data and assign empty values to all pixels */
-            void Create(size_t width, size_t height, PixelFormat pixelFormat, PixelType pixelType);
-            void Reset();
+            void create(size_t width, size_t height, PixelFormat pixelFormat, PixelType pixelType);
+            void reset();
 
 
             /* Here is getters block */
@@ -101,17 +110,17 @@ namespace ImgLib {
             void getPixel(size_t x, size_t y, FloatGrayscale * value) const;
             void getPixel(size_t x, size_t y, IntGrayscale * value) const;
 
-            void setPixel(size_t x, size_t y, const FloatRgb * rgb);
-            void setPixel(size_t x, size_t y, const IntRgb * rgb);
-            void setPixel(size_t x, size_t y, const FloatGrayscale * value);
-            void setPixel(size_t x, size_t y, const IntGrayscale * value);
+            void setPixel(size_t x, size_t y, const FloatRgb & rgb);
+            void setPixel(size_t x, size_t y, const IntRgb & rgb);
+            void setPixel(size_t x, size_t y, const FloatGrayscale & value);
+            void setPixel(size_t x, size_t y, const IntGrayscale & value);
 
             /* To be simple just convolution 3x3 will be supported now. In future we
              * can easyly ann generic convolution */
-            void Convolve_3x3(const float * data);
+            void convolve_3x3(const float * data);
 
             /* Also method for scaling */
-            void Scale(float factor);
+            void scale(float factor);
 
         private:
             PixelFormat pixelFormat;

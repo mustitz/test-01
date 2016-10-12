@@ -38,24 +38,6 @@
 
 namespace ImgLib {
 
-
-
-    /* It is difficult for me to say is it possible to represent
-     * such kind of universal pixel format. Because except RGB
-     * it is possible to use other color formats like CMYK, HSV.
-     * But we assume that the given format is exists.
-     * Class UniversalPixel would be used to converttion from
-     * one format to another throught universal pixel format.
-     */
-
-    struct UniversalPixel
-    {
-        void load(const FloatRgb & pixel);
-        void save(FloatRgb * pixel);
-    };
-
-
-
     /* Each pixel representation is a structure. Here we define
      * operations for each such representation. For convolution
      * only pixel addition and scaling is used. So here they are.
@@ -105,12 +87,14 @@ namespace ImgLib {
 
     /* Pixel vector is used to save data for specific pixel representation */
 
-    template <class Pixel>
+    template <PixelFormat pixelFormat, PixelType pixelType, class Pixel>
         class PixelBuf: public BasePixelBuf
     {
         public:
             template <PixelFormat, PixelType, class Pixel2>
                 friend class ActionWrapper;
+
+            virtual ~PixelBuf() override  = default;
 
             virtual void create(size_t width, size_t height) override
             {
@@ -124,7 +108,7 @@ namespace ImgLib {
                 this->height = height;
             }
 
-            Pixel getPixel(size_t x, size_t y)
+            Pixel getPixel(size_t x, size_t y) const
             {
                 if (x > width || y > height) {
                     Pixel def;
@@ -133,6 +117,34 @@ namespace ImgLib {
                 }
 
                 return data[x + y * width];
+            }
+
+            bool setPixel(size_t x, size_t y, const Pixel & pixel)
+            {
+                if (x > width || y > height) {
+                    return false;
+                }
+
+                data[x + y * width] = pixel;
+                return true;
+            }
+
+            static void safeSetPixel(const Image * image, BasePixelBuf * buf, size_t x, size_t y, const Pixel & pixel)
+            {
+                if (image->getPixelType() != pixelType) throw Exception("Arg type mismatch");
+                if (image->getPixelFormat() != pixelFormat) throw Exception("Arg type mismatch");
+                auto * me = static_cast<PixelBuf<pixelFormat, pixelType, Pixel> *> (buf);
+                if (!me->setPixel(x, y, pixel)) {
+                    throw Exception("Coordinates are out of bitmap");
+                }
+            }
+
+            static void safeGetPixel(const Image * image, const BasePixelBuf * buf, size_t x, size_t y, Pixel * pixel)
+            {
+                if (image->getPixelType() != pixelType) throw Exception("Arg type mismatch");
+                if (image->getPixelFormat() != pixelFormat) throw Exception("Arg type mismatch");
+                auto * me = static_cast<const PixelBuf<pixelFormat, pixelType, Pixel> *> (buf);
+                *pixel = me->getPixel(x, y);
             }
 
         private:
@@ -194,21 +206,21 @@ namespace ImgLib {
                 return true;
             }
 
-            PixelBuf<Pixel> * getStorage(const Image * me)
+            PixelBuf<pixelFormat, pixelType, Pixel> * getBuf(const Image * me)
             {
-                return static_cast<PixelBuf<Pixel> *>(me->buf);
+                return static_cast<PixelBuf<pixelFormat, pixelType, Pixel> *>(me->buf);
             }
 
             void create(Image * me, size_t width, size_t height)
             {
-                me->buf = new PixelBuf<Pixel>();
+                me->buf = new PixelBuf<pixelFormat, pixelType, Pixel>();
                 me->buf->create(width, height);
             }
 
             void cloneTo(const Image * me, Image * copy)
             {
-                auto source = getStorage(me);
-                auto destination = getStorage(me);
+                auto source = getBuf(me);
+                auto destination = new PixelBuf<pixelFormat, pixelType, Pixel>();;
 
                 destination->data = source->data;
                 destination->width = source->width;
@@ -216,6 +228,7 @@ namespace ImgLib {
 
                 copy->pixelFormat = me->pixelFormat;
                 copy->pixelType = me->pixelType;
+                copy->buf = destination;
             }
 
             void convolve(Image * me, const std::vector<ConvolutionElement> & convolutionVector)
@@ -223,8 +236,8 @@ namespace ImgLib {
                 Image tmp;
                 me->cloneTo(&tmp);
 
-                auto source = getStorage(&tmp);
-                auto destination = getStorage(me);
+                auto source = getBuf(&tmp);
+                auto destination = getBuf(me);
                 ConvolutionAlgorithm(destination, source, convolutionVector);
             }
     };
@@ -240,22 +253,26 @@ namespace ImgLib {
 
     Image::~Image()
     {
-        Reset();
-    }
-
-    void Image::Create(size_t width, size_t height, PixelFormat pixelFormat, PixelType pixelType)
-    {
-        Reset();
-
-        TRY_ALL_ACTIONS(create, width, height);
-
         if (buf != nullptr) {
-            this->pixelFormat = pixelFormat;
-            this->pixelType = pixelType;
+            delete buf;
         }
     }
 
-    void Image::Reset()
+    void Image::create(size_t width, size_t height, PixelFormat pixelFormat, PixelType pixelType)
+    {
+        reset();
+
+        this->pixelFormat = pixelFormat;
+        this->pixelType = pixelType;
+
+        TRY_ALL_ACTIONS(create, width, height);
+
+        if (buf == nullptr) {
+            throw Exception("Image::create(...) failed.");
+        }
+    }
+
+    void Image::reset()
     {
         if (buf != nullptr) {
             delete buf;
@@ -266,16 +283,37 @@ namespace ImgLib {
 
     void Image::cloneTo(Image * image) const
     {
-        image->Reset();
+        image->reset();
 
         TRY_ALL_ACTIONS(cloneTo, image);
     }
 
 
 
+    void Image::setPixel(size_t x, size_t y, const FloatRgb & pixel)
+    {
+        PixelBuf<FLOAT, RGB, FloatRgb>::safeSetPixel(this, buf, x, y, pixel);
+    }
+
+    void Image::getPixel(size_t x, size_t y, FloatRgb * pixel) const
+    {
+        PixelBuf<FLOAT, RGB, FloatRgb>::safeGetPixel(this, buf, x, y, pixel);
+    }
+
+    void Image::setPixel(size_t x, size_t y, const IntRgb & pixel)
+    {
+        PixelBuf<INT, RGB, IntRgb>::safeSetPixel(this, buf, x, y, pixel);
+    }
+
+    void Image::getPixel(size_t x, size_t y, IntRgb * pixel) const
+    {
+        PixelBuf<INT, RGB, IntRgb>::safeGetPixel(this, buf, x, y, pixel);
+    }
+
+
     /* Example call for convolution with 3x3 matrix */
 
-    void Image::Convolve_3x3(const float * data)
+    void Image::convolve_3x3(const float * data)
     {
         /* Create convolution vector */
 
