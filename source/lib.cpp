@@ -61,6 +61,11 @@ namespace ImgLib {
      * only pixel addition and scaling is used. So here they are.
      */
 
+    static inline void pixelSetDefault(FloatRgb * a)
+    {
+        a->r = a->g = a->b = 0.0;
+    }
+
     static inline void pixelAdd(FloatRgb * a, const FloatRgb & b)
     {
         a->r += b.r;
@@ -73,6 +78,12 @@ namespace ImgLib {
         p->r *= factor;
         p->g *= factor;
         p->b *= factor;
+    }
+
+
+    static inline void pixelSetDefault(IntRgb * a)
+    {
+        a->r = a->g = a->b = 0;
     }
 
     static inline void pixelAdd(IntRgb * a, const IntRgb & b)
@@ -91,6 +102,7 @@ namespace ImgLib {
 
 
 
+
     /* Pixel vector is used to save data for specific pixel representation */
 
     template <class Pixel>
@@ -100,10 +112,26 @@ namespace ImgLib {
             template <PixelFormat, PixelType, class Pixel2>
                 friend class ActionWrapper;
 
-            virtual void create(size_t width, size_t height) override;
+            virtual void create(size_t width, size_t height) override
+            {
+                Pixel def;
+                pixelSetDefault(&def);
+
+                std::vector<Pixel> newData(width * height, def);
+                data = std::move(newData);
+
+                this->width = width;
+                this->height = height;
+            }
 
             Pixel getPixel(size_t x, size_t y)
             {
+                if (x > width || y > height) {
+                    Pixel def;
+                    pixelSetDefault(&def);
+                    return def;
+                }
+
                 return data[x + y * width];
             }
 
@@ -111,7 +139,6 @@ namespace ImgLib {
             std::vector<Pixel> data;
 
     };
-
 
 
 
