@@ -69,19 +69,6 @@ namespace ImgLib {
 
 
 
-    /* Base Pixel buf class with common functionality for image pixel buffer */
-
-    class BasePixelBuf
-    {
-        public:
-            BasePixelBuf() = default;
-            virtual ~BasePixelBuf() = default;
-
-            virtual void create(size_t width, size_t height) = 0;
-    };
-
-
-
     /* Pixel vector is used to save data for specific pixel representation */
 
     template <class Pixel>
@@ -155,13 +142,13 @@ namespace ImgLib {
 
             PixelBuf<Pixel> * getStorage(const Image * me)
             {
-                return static_cast<PixelBuf<Pixel> *>(me->getStorage());
+                return static_cast<PixelBuf<Pixel> *>(me->buf);
             }
 
             void create(Image * me, size_t width, size_t height)
             {
-                me->storage = new PixelBuf<Pixel>();
-                me->storage->create(width, height);
+                me->buf = new PixelBuf<Pixel>();
+                me->buf->create(width, height);
             }
 
             void convolve(Image * me, const std::vector<ConvolutionElement> & convolutionVector)
@@ -178,18 +165,16 @@ namespace ImgLib {
 
 
     Image::Image():
-        width(0),
-        height(0),
         pixelFormat(FLOAT),
         pixelType(RGB),
-        storage(nullptr)
+        buf(nullptr)
     {
     }
 
     Image::~Image()
     {
-        if (storage != nullptr) {
-            delete storage;
+        if (buf != nullptr) {
+            delete buf;
         }
     }
 
