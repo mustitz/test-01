@@ -61,11 +61,33 @@ namespace ImgLib {
      * only pixel addition and scaling is used. So here they are.
      */
 
-    void pixelAdd(FloatRgb * a, const FloatRgb & b);
-    void pixelScale(FloatRgb * p, float factor);
+    static inline void pixelAdd(FloatRgb * a, const FloatRgb & b)
+    {
+        a->r += b.r;
+        a->g += b.g;
+        a->b += b.b;
+    }
 
-    void pixelAdd(IntRgb * a, const IntRgb & b);
-    void pixelScale(IntRgb * p, float factor);
+    static inline void pixelScale(FloatRgb * p, float factor)
+    {
+        p->r *= factor;
+        p->g *= factor;
+        p->b *= factor;
+    }
+
+    static inline void pixelAdd(IntRgb * a, const IntRgb & b)
+    {
+        a->r += b.r;
+        a->g += b.g;
+        a->b += b.b;
+    }
+
+    static inline void pixelScale(IntRgb * p, float factor)
+    {
+        p->r *= factor;
+        p->g *= factor;
+        p->b *= factor;
+    }
 
 
 
