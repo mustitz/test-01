@@ -80,7 +80,10 @@ namespace ImgLib {
 
             virtual void create(size_t width, size_t height) override;
 
-            Pixel getPixel(size_t x, size_t y);
+            Pixel getPixel(size_t x, size_t y)
+            {
+                return data[x + y * width];
+            }
 
         private:
             std::vector<Pixel> data;

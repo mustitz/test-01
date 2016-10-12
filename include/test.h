@@ -59,7 +59,7 @@ namespace ImgLib {
             size_t getWidth() const { return width; }
             size_t getHeight() const { return height; }
 
-        private:
+        protected:
             size_t width;
             size_t height;
     };
