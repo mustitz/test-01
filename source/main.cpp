@@ -11,7 +11,7 @@ int main()
     };
 
     Image test;
-    test.Create(10, 10, Image::FLOAT, Image::RGB);
+    test.Create(10, 10, FLOAT, RGB);
     test.Convolve_3x3(matrix);
     return 0;
 }

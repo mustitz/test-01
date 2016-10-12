@@ -7,6 +7,10 @@
 
 namespace ImgLib {
 
+    enum PixelFormat { FLOAT, INT };
+    enum PixelType { RGB, GRAY };
+
+
     /* Here is list of the possible pixel representation structures.
      * According to conditions only four possible pixel representation 
      * are supported. But we know that also CMYK, HSV and many other  
@@ -51,8 +55,8 @@ namespace ImgLib {
     class Image
     {
         public:
-            enum PixelFormat { FLOAT, INT };
-            enum PixelType { RGB, GRAY };
+            template <PixelFormat pixelFormat, PixelType pixelType, class Pixel>
+                friend class ActionWrapper;
 
             Image();  // Create an empty image
             ~Image(); 
