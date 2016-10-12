@@ -165,22 +165,36 @@ namespace ImgLib {
 
 
     Image::Image():
-        pixelFormat(FLOAT),
-        pixelType(RGB),
+        pixelFormat(EMPTY_PIXEL_FORMAT),
+        pixelType(EMPTY_PIXEL_TYPE),
         buf(nullptr)
     {
     }
 
     Image::~Image()
     {
-        if (buf != nullptr) {
-            delete buf;
-        }
+        Reset();
     }
 
     void Image::Create(size_t width, size_t height, PixelFormat pixelFormat, PixelType pixelType)
     {
+        Reset();
+
         TRY_ALL_ACTIONS(create, width, height);
+
+        if (buf != nullptr) {
+            this->pixelFormat = pixelFormat;
+            this->pixelType = pixelType;
+        }
+    }
+
+    void Image::Reset()
+    {
+        if (buf != nullptr) {
+            delete buf;
+        }
+
+        new (this) Image();
     }
 
 

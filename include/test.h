@@ -7,8 +7,8 @@
 
 namespace ImgLib {
 
-    enum PixelFormat { FLOAT, INT };
-    enum PixelType { RGB, GRAY };
+    enum PixelFormat { EMPTY_PIXEL_FORMAT, FLOAT, INT };
+    enum PixelType { EMPTY_PIXEL_TYPE, RGB, GRAY };
 
 
     /* Here is list of the possible pixel representation structures.
@@ -80,6 +80,7 @@ namespace ImgLib {
 
             // Allocate data and assign empty values to all pixels */
             void Create(size_t width, size_t height, PixelFormat pixelFormat, PixelType pixelType);
+            void Reset();
 
 
             /* Here is getters block */
