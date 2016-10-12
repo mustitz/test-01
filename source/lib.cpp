@@ -74,15 +74,17 @@ namespace ImgLib {
     template <class Pixel>
         class PixelBuf: public BasePixelBuf
     {
-        private:
-            std::vector<Pixel> data;
-
         public:
+            template <PixelFormat, PixelType, class Pixel2>
+                friend class ActionWrapper;
+
             virtual void create(size_t width, size_t height) override;
 
             Pixel getPixel(size_t x, size_t y);
-            size_t getWidth() const;
-            size_t getHeight() const;
+
+        private:
+            std::vector<Pixel> data;
+
     };
 
 
@@ -151,6 +153,19 @@ namespace ImgLib {
                 me->buf->create(width, height);
             }
 
+            void cloneTo(const Image * me, Image * copy)
+            {
+                auto source = getStorage(me);
+                auto destination = getStorage(me);
+
+                destination->data = source->data;
+                destination->width = source->width;
+                destination->height = source->height;
+
+                copy->pixelFormat = me->pixelFormat;
+                copy->pixelType = me->pixelType;
+            }
+
             void convolve(Image * me, const std::vector<ConvolutionElement> & convolutionVector)
             {
                 Image tmp;
@@ -197,6 +212,12 @@ namespace ImgLib {
         new (this) Image();
     }
 
+    void Image::cloneTo(Image * image) const
+    {
+        image->Reset();
+
+        TRY_ALL_ACTIONS(cloneTo, image);
+    }
 
 
 

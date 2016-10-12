@@ -48,6 +48,9 @@ namespace ImgLib {
     class BasePixelBuf
     {
         public:
+            template <PixelFormat, PixelType, class Pixel>
+                friend class ActionWrapper;
+
             BasePixelBuf() = default;
             virtual ~BasePixelBuf() = default;
 
@@ -72,7 +75,7 @@ namespace ImgLib {
     class Image
     {
         public:
-            template <PixelFormat pixelFormat, PixelType pixelType, class Pixel>
+            template <PixelFormat, PixelType, class Pixel>
                 friend class ActionWrapper;
 
             Image();  // Create an empty image
