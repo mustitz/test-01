@@ -8,6 +8,10 @@
 
 namespace ImgLib {
 
+    /* In case of error library throws an exception. In future it would be good
+     * to have a special flag to control library behavious like in OpenCL
+     */
+
     class Exception: public std::runtime_error
     {
         public:
@@ -16,8 +20,15 @@ namespace ImgLib {
             {}
     };
 
+
+
+    /* These enums define all supported pixel format types.
+     * Also pixel enumeration may be added later.
+     */
+
     enum PixelFormat { EMPTY_PIXEL_FORMAT, FLOAT, INT };
     enum PixelType { EMPTY_PIXEL_TYPE, RGB, GRAY };
+
 
 
     /* Here is list of the possible pixel representation structures.
@@ -87,12 +98,16 @@ namespace ImgLib {
             template <PixelFormat, PixelType, class Pixel>
                 friend class ActionWrapper;
 
-            Image();  // Create an empty image
+            /* Contructor/destructor */
+            Image();
             ~Image();
 
-            // Allocate data and assign empty values to all pixels */
+
+
+            /* Allocate & free data and assign empty values to all pixels */
             void create(size_t width, size_t height, PixelFormat pixelFormat, PixelType pixelType);
             void reset();
+
 
 
             /* Here is getters block */
@@ -103,8 +118,6 @@ namespace ImgLib {
             PixelFormat getPixelFormat() const { return pixelFormat; }
             PixelType getPixelType() const { return pixelType; }
 
-            void cloneTo(Image * image) const;
-
             void getPixel(size_t x, size_t y, FloatRgb * rgb) const;
             void getPixel(size_t x, size_t y, IntRgb * rgb) const;
             void getPixel(size_t x, size_t y, FloatGrayscale * value) const;
@@ -114,6 +127,12 @@ namespace ImgLib {
             void setPixel(size_t x, size_t y, const IntRgb & rgb);
             void setPixel(size_t x, size_t y, const FloatGrayscale & value);
             void setPixel(size_t x, size_t y, const IntGrayscale & value);
+
+
+            /* Operations */
+
+            /* Clone image */
+            void cloneTo(Image * image) const;
 
             /* To be simple just convolution 3x3 will be supported now. In future we
              * can easyly ann generic convolution */

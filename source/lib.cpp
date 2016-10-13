@@ -30,8 +30,10 @@
 
 #define TRY_ALL_ACTIONS(action, ...)   \
     do { \
-        TRY_ACTION( FLOAT, RGB, FloatRgb, action, ## __VA_ARGS__); \
-        TRY_ACTION(   INT, RGB,   IntRgb, action, ## __VA_ARGS__); \
+        TRY_ACTION( FLOAT,  RGB,       FloatRgb, action, ## __VA_ARGS__); \
+        TRY_ACTION(   INT,  RGB,         IntRgb, action, ## __VA_ARGS__); \
+        TRY_ACTION( FLOAT, GRAY, FloatGrayscale, action, ## __VA_ARGS__); \
+        TRY_ACTION(   INT, GRAY,   IntGrayscale, action, ## __VA_ARGS__); \
     } while (0)
 
 
@@ -82,6 +84,37 @@ namespace ImgLib {
         p->b *= factor;
     }
 
+
+    static inline void pixelSetDefault(FloatGrayscale * a)
+    {
+        *a = 0.0;
+    }
+
+    static inline void pixelAdd(FloatGrayscale * a, const FloatGrayscale & b)
+    {
+        *a += b;
+    }
+
+    static inline void pixelScale(FloatGrayscale * p, float factor)
+    {
+        *p *= factor;
+    }
+
+
+    static inline void pixelSetDefault(IntGrayscale * a)
+    {
+        *a = 0;
+    }
+
+    static inline void pixelAdd(IntGrayscale * a, const IntGrayscale & b)
+    {
+        *a += b;
+    }
+
+    static inline void pixelScale(IntGrayscale * p, float factor)
+    {
+        *p *= factor;
+    }
 
 
 
@@ -310,6 +343,26 @@ namespace ImgLib {
     void Image::getPixel(size_t x, size_t y, IntRgb * pixel) const
     {
         PixelBuf<INT, RGB, IntRgb>::safeGetPixel(this, buf, x, y, pixel);
+    }
+
+    void Image::setPixel(size_t x, size_t y, const FloatGrayscale & pixel)
+    {
+        PixelBuf<FLOAT, GRAY, FloatGrayscale>::safeSetPixel(this, buf, x, y, pixel);
+    }
+
+    void Image::getPixel(size_t x, size_t y, FloatGrayscale * pixel) const
+    {
+        PixelBuf<FLOAT, GRAY, FloatGrayscale>::safeGetPixel(this, buf, x, y, pixel);
+    }
+
+    void Image::setPixel(size_t x, size_t y, const IntGrayscale & pixel)
+    {
+        PixelBuf<INT, GRAY, IntGrayscale>::safeSetPixel(this, buf, x, y, pixel);
+    }
+
+    void Image::getPixel(size_t x, size_t y, IntGrayscale * pixel) const
+    {
+        PixelBuf<INT, GRAY, IntGrayscale>::safeGetPixel(this, buf, x, y, pixel);
     }
 
 
