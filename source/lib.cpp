@@ -228,6 +228,26 @@ namespace ImgLib {
 
 
 
+    /* Scaling.
+     * I dit not dig very much into a lot of scaling technics... Here is simplest one:
+     */
+
+    template <class ImgData>
+        void ScaleAlgorithm(ImgData * destination, const ImgData * source, double scaleFactor)
+    {
+        for (size_t y = 0; y < destination->getHeight(); ++y)
+        for (size_t x = 0; x < destination->getWidth(); ++x) {
+
+            size_t sourceX = x / scaleFactor;
+            size_t sourceY = y / scaleFactor;
+
+            auto pixel = source->getPixel(sourceX, sourceY);
+            destination->setPixel(x, y, pixel);
+        }
+    }
+
+
+
     /* This is action wrapper on template algorithms like convolution */
 
     template <PixelFormat pixelFormat, PixelType pixelType, class Pixel>
@@ -274,6 +294,20 @@ namespace ImgLib {
                 auto source = getBuf(&tmp);
                 auto destination = getBuf(me);
                 ConvolutionAlgorithm(destination, source, convolutionVector);
+            }
+
+            void scale(Image * me, float factor)
+            {
+                size_t newWidth = factor * me->getWidth();
+                size_t newHeight = factor * me->getHeight();
+
+                Image tmp;
+                me->cloneTo(&tmp);
+
+                me->create(newWidth, newHeight, me->pixelFormat, me->pixelType);
+                auto source = getBuf(&tmp);
+                auto destination = getBuf(me);
+                ScaleAlgorithm(destination, source, factor);
             }
     };
 
@@ -385,5 +419,12 @@ namespace ImgLib {
         }
 
         TRY_ALL_ACTIONS(convolve, convolutionVector);
+    }
+
+
+
+    void Image::scale(float factor)
+    {
+        TRY_ALL_ACTIONS(scale, factor);
     }
 }
