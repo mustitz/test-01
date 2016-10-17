@@ -6,3 +6,57 @@ To install application try following commands:
 
 To install from GIT repository run before
     autoreconf -vis
+
+
+
+As for me performance is quite important for an image library. In C++
+templates provide best performance for algorithms with abstract types.
+So I selected a template class/function as internal implementation of
+image algorithms. It gives to compiler opportunity to apply maximum 
+optimization techniques.
+
+
+
+From another side interface to user in my view might be as simplest as possible.
+So I decided to remove any templates. Client should know nothing about internals 
+and template magic inside. For user most simple way to set pixel format in class 
+arguments and just to call functions without any magic. So we gives to client
+only one class Image with common methods like create/cloneTo/convolve/scale with
+getters and setters. This is wrapper on template algorithm implementation.
+
+
+
+Library implementation may be divided into two parts. First part is algorithms
+directly. Second part is proxy between simple class Image and algorithms. 
+
+
+
+Algorithm's part is more simple. I did not put too many effort into optimal 
+implementations. I tried to get the simplest one to illustrate.
+
+Usually an algorithm has a declaration like it shown below:
+
+template <class ImgData>
+    void ConvolutionAlgorithm(
+        ImgData * destination, 
+        const ImgData * source, 
+        const std::vector<ConvolutionElement> & convolutionVector
+    );
+
+where ImgData is a class which supports methods getPixel and setPixel to get/set
+am image pixel. For pixels might be suported the following methods:
+    pixelAdd         - add pixel;
+    pixelScale       - multiplying pixel to coefficient;
+    pixelSetDefault  - default value for pixel.
+This is enought for existing image algorithms.
+
+
+
+Proxy part is wrapper on actions. His name is ActionWrapper. It contains service 
+code for creating temporary buffers, preserve data so on. At the end wrapper calls 
+algorithm. ActionWrapper class is a template which supports three arguments. They
+are pixel format, pixel type, pixel. Wrapper might call the appropriate algorithm
+based on variable data. To make it simple some preprocessor magic is user. First
+at all ActionWrapper supports method check to answer “Is it suitable template
+instance for these arguments?” Simple macroses contains list of all supported
+combination format/type and selecting best one. This is variadic macroses.
